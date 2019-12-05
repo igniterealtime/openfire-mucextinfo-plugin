@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<plugin>
+    <class>org.igniterealtime.openfire.plugin.mucextinfo.MucExtInfoPlugin</class>
+
+    <name>${project.name}</name>
+    <description>${project.description}</description>
+    <version>${project.version}</version>
+
+    <author>Guus der Kinderen</author>
+    <date>11/19/2019</date>
+
+<!--    <databaseKey>mucextinfo</databaseKey>-->
+<!--    <databaseVersion>0</databaseVersion>-->
+
+    <minServerVersion>4.5.0</minServerVersion>
+
+    <adminconsole>
+        <tab id="tab-groupchat">
+            <sidebar id="sidebar-groupchat-administration">
+                <item id="muc-room-summary">
+                    <sidebar id="sidebar-groupchat-options">
+
+                        <!-- Room Settings -->
+                        <item id="muc-room-extinfo-edit-form" name="${sidebar.muc-room-extinfo-edit-form}"
+                              url="muc-room-extinfo-edit-form.jsp"
+                              description="${sidebar.muc-room-extinfo-edit-form.descr}"/>
+                    </sidebar>
+                </item>
+            </sidebar>
+        </tab>
+    </adminconsole>
+</plugin>
