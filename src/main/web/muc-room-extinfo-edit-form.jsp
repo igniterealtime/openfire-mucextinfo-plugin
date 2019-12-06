@@ -70,7 +70,7 @@
         }
 
         if ( formTypeName == null || formTypeName.trim().isEmpty() ) {
-            errors.put("formTypeName", "Missing Form Type Name");
+            errors.put("formTypeName", "Missing Form Name");
         }
 
         if ( addForm ) {
@@ -83,24 +83,24 @@
         if ( deleteForm ) {
             List<DataForm> existing = DAO.retrieveExtensionElementsForRoom(roomJID);
             if ( existing == null || existing.stream().noneMatch(dataForm -> dataForm.getFormTypeName().equalsIgnoreCase(formTypeName)) ) {
-                errors.put( "does not exist", "A form with this name does not exists!");
+                errors.put( "does not exist", "A form with this name does not exist!");
             }
         }
 
         if ( addField ) {
             if ( varName == null || varName.trim().isEmpty() ) {
-                errors.put("varName", "Missing field variable name.");
+                errors.put("varName", "Missing variable name.");
             }
         }
 
         if ( deleteField ) {
             if ( varName == null || varName.trim().isEmpty() ) {
-                errors.put("varName", "Missing field variable name.");
+                errors.put("varName", "Missing variable name.");
             } else {
                 List<DataForm> existing = DAO.retrieveExtensionElementsForRoom(roomJID);
                 if ( existing == null || existing.stream().noneMatch(dataForm -> dataForm.getFields().stream().anyMatch(field -> field.getVarName().equals(varName)) ) )
                 {
-                    errors.put("does not exist", "A field with this name does not exists in the form!");
+                    errors.put("does not exist", "A field with this name does not exist in the form!");
                 }
             }
         }
