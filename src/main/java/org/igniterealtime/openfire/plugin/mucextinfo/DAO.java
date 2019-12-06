@@ -20,6 +20,7 @@ import org.jivesoftware.util.cache.Cache;
 import org.jivesoftware.util.cache.CacheFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xmpp.packet.JID;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,15 +33,16 @@ import java.util.Optional;
  */
 public class DAO
 {
-    private final static Cache<String, CacheableOptional<ArrayList<DataForm>>> EXTENSIONS_BY_ROOM = CacheFactory.createLocalCache("MUC Extended Service Discovery");
+    private final static Cache<JID, CacheableOptional<ArrayList<DataForm>>> EXTENSIONS_BY_ROOM = CacheFactory.createLocalCache("MUC Extended Service Discovery");
 
     private static final Logger Log = LoggerFactory.getLogger(DAO.class);
 
-    public static void addForm( String roomName, DataForm dataForm )
+    public static void addForm( JID room, DataForm dataForm )
     {
-        Log.debug("Add Extension Element '{}' for room: '{}'", dataForm.getFormTypeName(), roomName);
+        room = room.asBareJID(); // normalize.
+        Log.debug("Add Extension Element '{}' for room: '{}'", dataForm.getFormTypeName(), room);
 
-        final CacheableOptional<ArrayList<DataForm>> old = EXTENSIONS_BY_ROOM.get(roomName);
+        final CacheableOptional<ArrayList<DataForm>> old = EXTENSIONS_BY_ROOM.get(room);
         final ArrayList<DataForm> elements;
         if ( old == null || old.get() == null )
         {
@@ -51,14 +53,15 @@ public class DAO
             elements = old.get();
         }
         elements.add(dataForm);
-        EXTENSIONS_BY_ROOM.put(roomName, CacheableOptional.of(elements));
+        EXTENSIONS_BY_ROOM.put(room, CacheableOptional.of(elements));
     }
 
-    public static void removeForm( String roomName, String formTypeName )
+    public static void removeForm( JID room, String formTypeName )
     {
-        Log.debug("Remove Extension Element '{}' for room: '{}'", formTypeName, roomName);
+        room = room.asBareJID(); // normalize.
+        Log.debug("Remove Extension Element '{}' for room: '{}'", formTypeName, room);
 
-        final CacheableOptional<ArrayList<DataForm>> old = EXTENSIONS_BY_ROOM.get(roomName);
+        final CacheableOptional<ArrayList<DataForm>> old = EXTENSIONS_BY_ROOM.get(room);
         final ArrayList<DataForm> elements;
         if ( old == null || old.get() == null )
         {
@@ -69,19 +72,21 @@ public class DAO
             elements = old.get();
         }
         elements.removeIf(dataForm -> dataForm.getFormTypeName().equals(formTypeName));
-        EXTENSIONS_BY_ROOM.put(roomName, CacheableOptional.of(elements.isEmpty() ? null : elements));
+        EXTENSIONS_BY_ROOM.put(room, CacheableOptional.of(elements.isEmpty() ? null : elements));
     }
 
-    public static void addField( String roomName, String formTypeName, String varName, String label, String value )
+    public static void addField( JID room, String formTypeName, String varName, String label, String value )
     {
+        room = room.asBareJID(); // normalize.
+
         if ( varName == null || varName.isEmpty() )
         {
             throw new IllegalArgumentException("Argument 'varName' cannot be a null or empty String.");
         }
 
-        Log.debug("Adding Field '{}' from Extension Element '{}' for room: '{}'", varName, formTypeName, roomName);
+        Log.debug("Adding Field '{}' from Extension Element '{}' for room: '{}'", varName, formTypeName, room);
 
-        final CacheableOptional<ArrayList<DataForm>> old = EXTENSIONS_BY_ROOM.get(roomName);
+        final CacheableOptional<ArrayList<DataForm>> old = EXTENSIONS_BY_ROOM.get(room);
         final ArrayList<DataForm> elements;
         if ( old == null || old.get() == null )
         {
@@ -128,15 +133,17 @@ public class DAO
                 }
             }
         }
-        EXTENSIONS_BY_ROOM.put(roomName, CacheableOptional.of(elements.isEmpty() ? null : elements));
+        EXTENSIONS_BY_ROOM.put(room, CacheableOptional.of(elements.isEmpty() ? null : elements));
     }
 
 
-    public static void removeField( String roomName, String formTypeName, String varName )
+    public static void removeField( JID room, String formTypeName, String varName )
     {
-        Log.debug("Remove Field '{}' from Extension Element '{}' for room: '{}'", varName, formTypeName, roomName);
+        room = room.asBareJID(); // normalize.
 
-        final CacheableOptional<ArrayList<DataForm>> old = EXTENSIONS_BY_ROOM.get(roomName);
+        Log.debug("Remove Field '{}' from Extension Element '{}' for room: '{}'", varName, formTypeName, room);
+
+        final CacheableOptional<ArrayList<DataForm>> old = EXTENSIONS_BY_ROOM.get(room);
         final ArrayList<DataForm> elements;
         if ( old == null || old.get() == null )
         {
@@ -154,22 +161,17 @@ public class DAO
                 element.getFields().removeIf(field -> field.getVarName().equals(varName));
             }
         }
-        EXTENSIONS_BY_ROOM.put(roomName, CacheableOptional.of(elements.isEmpty() ? null : elements));
+        EXTENSIONS_BY_ROOM.put(room, CacheableOptional.of(elements.isEmpty() ? null : elements));
     }
 
-    public static List<DataForm> retrieveExtensionElementsForRoom( String roomName )
+    public static List<DataForm> retrieveExtensionElementsForRoom( JID room )
     {
-        Log.debug("Get Extension Elements for room: '{}'", roomName);
+        room = room.asBareJID(); // normalize.
 
-        final CacheableOptional<ArrayList<DataForm>> optionalResult = EXTENSIONS_BY_ROOM.get(roomName);
+        Log.debug("Get Extension Elements for room: '{}'", room);
+
+        final CacheableOptional<ArrayList<DataForm>> optionalResult = EXTENSIONS_BY_ROOM.get(room);
 
         return optionalResult == null ? null : optionalResult.get();
-    }
-
-    public static void replaceExtensionElementsForRoom( String roomName, List<DataForm> dataForms )
-    {
-        Log.debug("Set {} Extension Element(s) for room: '{}'", dataForms.size(), roomName);
-
-        EXTENSIONS_BY_ROOM.put(roomName, CacheableOptional.of(new ArrayList<>(dataForms)));
     }
 }

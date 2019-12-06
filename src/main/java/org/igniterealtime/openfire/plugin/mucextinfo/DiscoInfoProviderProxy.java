@@ -44,7 +44,13 @@ public class DiscoInfoProviderProxy implements DiscoInfoProvider
     @Nonnull
     private final DiscoInfoProvider delegate;
 
-    public DiscoInfoProviderProxy( final DiscoInfoProvider delegate ) {this.delegate = delegate;}
+    @Nonnull
+    private final String serviceDomain;
+
+    public DiscoInfoProviderProxy( final DiscoInfoProvider delegate, final String serviceDomain ) {
+        this.delegate = delegate;
+        this.serviceDomain = serviceDomain;
+    }
 
     public DiscoInfoProvider getDelegate()
     {
@@ -81,7 +87,7 @@ public class DiscoInfoProviderProxy implements DiscoInfoProvider
         }
         Log.trace("... obtained {} data form(s) from the delegate.", result.size());
 
-        final List<DataForm> dataForms = DAO.retrieveExtensionElementsForRoom(name);
+        final List<DataForm> dataForms = DAO.retrieveExtensionElementsForRoom( new JID( name, serviceDomain, null) );
         Log.trace("... obtained {} data form(s) from the this plugin.", dataForms == null ? 0 : dataForms.size());
 
         if ( dataForms != null )

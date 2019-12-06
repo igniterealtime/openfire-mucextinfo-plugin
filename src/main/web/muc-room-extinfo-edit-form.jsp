@@ -74,14 +74,14 @@
         }
 
         if ( addForm ) {
-            List<DataForm> existing = DAO.retrieveExtensionElementsForRoom(roomJID.getNode());
+            List<DataForm> existing = DAO.retrieveExtensionElementsForRoom(roomJID);
             if ( existing != null && existing.stream().anyMatch(dataForm -> dataForm.getFormTypeName().equalsIgnoreCase(formTypeName)) ) {
                 errors.put( "already exists", "A form with this name already exists!");
             }
         }
 
         if ( deleteForm ) {
-            List<DataForm> existing = DAO.retrieveExtensionElementsForRoom(roomJID.getNode());
+            List<DataForm> existing = DAO.retrieveExtensionElementsForRoom(roomJID);
             if ( existing == null || existing.stream().noneMatch(dataForm -> dataForm.getFormTypeName().equalsIgnoreCase(formTypeName)) ) {
                 errors.put( "does not exist", "A form with this name does not exists!");
             }
@@ -97,7 +97,7 @@
             if ( varName == null || varName.trim().isEmpty() ) {
                 errors.put("varName", "Missing field variable name.");
             } else {
-                List<DataForm> existing = DAO.retrieveExtensionElementsForRoom(roomJID.getNode());
+                List<DataForm> existing = DAO.retrieveExtensionElementsForRoom(roomJID);
                 if ( existing == null || existing.stream().noneMatch(dataForm -> dataForm.getFields().stream().anyMatch(field -> field.getVarName().equals(varName)) ) )
                 {
                     errors.put("does not exist", "A field with this name does not exists in the form!");
@@ -110,25 +110,25 @@
     if ( errors.isEmpty() ) {
         if ( addForm ) {
             final DataForm newForm = new DataForm(formTypeName );
-            DAO.addForm( roomJID.getNode(), newForm );
+            DAO.addForm( roomJID, newForm );
 
             webManager.logEvent( "MUC External Info, new form added.", "form name: " + formTypeName );
             response.sendRedirect( "muc-room-extinfo-edit-form.jsp?roomJID="+URLEncoder.encode(roomJID.toBareJID(), "UTF-8") + "&success=true" );
             return;
         } else if ( deleteForm ) {
-            DAO.removeForm( roomJID.getNode(), formTypeName );
+            DAO.removeForm( roomJID, formTypeName );
 
             webManager.logEvent( "MUC External Info, form deleted.", "form name: " + formTypeName );
             response.sendRedirect( "muc-room-extinfo-edit-form.jsp?roomJID="+URLEncoder.encode(roomJID.toBareJID(), "UTF-8") + "&success=true" );
             return;
         } else if ( addField ) {
-            DAO.addField( roomJID.getNode(), formTypeName, varName, label, value );
+            DAO.addField( roomJID, formTypeName, varName, label, value );
 
             webManager.logEvent( "MUC External Info, new field added.", "form name: " + formTypeName + ", field varName: " + varName );
             response.sendRedirect( "muc-room-extinfo-edit-form.jsp?roomJID="+URLEncoder.encode(roomJID.toBareJID(), "UTF-8") + "&success=true" );
             return;
         } else if ( deleteField ) {
-            DAO.removeField( roomJID.getNode(), formTypeName, varName );
+            DAO.removeField( roomJID, formTypeName, varName );
 
             webManager.logEvent( "MUC External Info, field deleted.", "form name: " + formTypeName + ", field varName: " + varName );
             response.sendRedirect( "muc-room-extinfo-edit-form.jsp?roomJID="+URLEncoder.encode(roomJID.toBareJID(), "UTF-8") + "&success=true" );
@@ -153,7 +153,7 @@
     pageContext.setAttribute( "errors", errors );
     pageContext.setAttribute( "roomJID", roomJID );
     pageContext.setAttribute( "success", success != null && errors.isEmpty() );
-    pageContext.setAttribute( "extensions", DAO.retrieveExtensionElementsForRoom( roomJID.getNode() ));
+    pageContext.setAttribute( "extensions", DAO.retrieveExtensionElementsForRoom( roomJID ));
 %>
 <html>
 <head>

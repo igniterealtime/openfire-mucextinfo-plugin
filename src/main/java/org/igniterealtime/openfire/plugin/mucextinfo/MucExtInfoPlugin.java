@@ -88,7 +88,7 @@ public class MucExtInfoPlugin implements Plugin
                 {
                     Log.trace("... replacing handler for MUC service '{}'.", service.getServiceDomain());
                     setMethod.setAccessible(true);
-                    setMethod.invoke(iqDiscoInfoHandler, service.getServiceDomain(), new DiscoInfoProviderProxy(old));
+                    setMethod.invoke(iqDiscoInfoHandler, service.getServiceDomain(), new DiscoInfoProviderProxy(old, service.getServiceDomain()));
                 }
             }
             finally
