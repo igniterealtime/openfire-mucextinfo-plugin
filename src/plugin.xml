@@ -9,8 +9,8 @@
     <author>Guus der Kinderen</author>
     <date>11/19/2019</date>
 
-<!--    <databaseKey>mucextinfo</databaseKey>-->
-<!--    <databaseVersion>0</databaseVersion>-->
+    <databaseKey>mucextinfo</databaseKey>
+    <databaseVersion>0</databaseVersion>
 
     <minServerVersion>4.5.0</minServerVersion>
 

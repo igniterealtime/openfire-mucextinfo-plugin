@@ -109,8 +109,7 @@
     // Apply changes
     if ( errors.isEmpty() ) {
         if ( addForm ) {
-            final DataForm newForm = new DataForm(formTypeName );
-            DAO.addForm( roomJID, newForm );
+            DAO.addForm( roomJID, formTypeName );
 
             webManager.logEvent( "MUC External Info, new form added.", "form name: " + formTypeName );
             response.sendRedirect( "muc-room-extinfo-edit-form.jsp?roomJID="+URLEncoder.encode(roomJID.toBareJID(), "UTF-8") + "&success=true" );
