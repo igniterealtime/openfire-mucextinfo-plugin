@@ -25,13 +25,13 @@ import java.util.List;
  *
  * @author Guus der Kinderen, guus.der.kinderen@gmail.com
  */
-public class DataForm implements Serializable
+public class ExtDataForm implements Serializable
 {
     private final String formTypeName;
 
     private final ArrayList<Field> fields = new ArrayList<>();
 
-    public DataForm( final String formTypeName ) {this.formTypeName = formTypeName;}
+    public ExtDataForm( final String formTypeName ) {this.formTypeName = formTypeName;}
 
     public String getFormTypeName()
     {

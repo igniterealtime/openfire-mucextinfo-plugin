@@ -87,12 +87,12 @@ public class DiscoInfoProviderProxy implements DiscoInfoProvider
         }
         Log.trace("... obtained {} data form(s) from the delegate.", result.size());
 
-        final List<DataForm> dataForms = DAO.retrieveExtensionElementsForRoom( new JID( name, serviceDomain, null) );
+        final List<ExtDataForm> dataForms = DAO.retrieveExtensionElementsForRoom(new JID(name, serviceDomain, null) );
         Log.trace("... obtained {} data form(s) from the this plugin.", dataForms == null ? 0 : dataForms.size());
 
         if ( dataForms != null )
         {
-            for ( final DataForm extensionElement : dataForms )
+            for ( final ExtDataForm extensionElement : dataForms )
             {
                 // TODO DataForms obtained from this plugin potentially have the same Form Type Name as one that's obtained from the delegate. How these results are merged is something that should be looked into more carefully.
                 final org.xmpp.forms.DataForm dataForm = new org.xmpp.forms.DataForm(org.xmpp.forms.DataForm.Type.result);

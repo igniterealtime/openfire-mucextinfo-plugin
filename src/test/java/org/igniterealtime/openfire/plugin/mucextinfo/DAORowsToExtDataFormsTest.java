@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  *
  * @author Guus der Kinderen, guus.der.kinderen@gmail.com
  */
-public class DAORowsToDataFormsTest
+public class DAORowsToExtDataFormsTest
 {
     @BeforeClass
     public static void beforeClass()
@@ -64,7 +64,7 @@ public class DAORowsToDataFormsTest
         final ConcurrentMap<String, ArrayList<Field>> input = null;
 
         // Execute system under test.
-        final ArrayList<DataForm> result = DAO.rowsToDataForms(input);
+        final ArrayList<ExtDataForm> result = DAO.rowsToDataForms(input);
 
         // Verify results.
         assertNull( result );
@@ -80,7 +80,7 @@ public class DAORowsToDataFormsTest
         final ConcurrentMap<String, ArrayList<Field>> input = new ConcurrentHashMap<>();
 
         // Execute system under test.
-        final ArrayList<DataForm> result = DAO.rowsToDataForms(input);
+        final ArrayList<ExtDataForm> result = DAO.rowsToDataForms(input);
 
         // Verify results.
         assertNull( result );
@@ -98,7 +98,7 @@ public class DAORowsToDataFormsTest
         input.put( "myForm", rows );
 
         // Execute system under test.
-        final ArrayList<DataForm> result = DAO.rowsToDataForms(input);
+        final ArrayList<ExtDataForm> result = DAO.rowsToDataForms(input);
 
         // Verify results.
         assertNotNull( result );
@@ -121,7 +121,7 @@ public class DAORowsToDataFormsTest
         input.put( "myForm", rows );
 
         // Execute system under test.
-        final ArrayList<DataForm> result = DAO.rowsToDataForms(input);
+        final ArrayList<ExtDataForm> result = DAO.rowsToDataForms(input);
 
         // Verify results.
         assertNotNull( result );
@@ -148,7 +148,7 @@ public class DAORowsToDataFormsTest
         input.put( "myForm", rows );
 
         // Execute system under test.
-        final ArrayList<DataForm> result = DAO.rowsToDataForms(input);
+        final ArrayList<ExtDataForm> result = DAO.rowsToDataForms(input);
 
         // Verify results.
         assertNotNull( result );
@@ -175,7 +175,7 @@ public class DAORowsToDataFormsTest
         input.put( "myForm", rows );
 
         // Execute system under test.
-        final ArrayList<DataForm> result = DAO.rowsToDataForms(input);
+        final ArrayList<ExtDataForm> result = DAO.rowsToDataForms(input);
 
         // Verify results.
         assertNotNull( result );
@@ -202,7 +202,7 @@ public class DAORowsToDataFormsTest
         input.put( "myForm", rows );
 
         // Execute system under test.
-        final ArrayList<DataForm> result = DAO.rowsToDataForms(input);
+        final ArrayList<ExtDataForm> result = DAO.rowsToDataForms(input);
 
         // Verify results.
         assertNotNull( result );
@@ -241,7 +241,7 @@ public class DAORowsToDataFormsTest
         input.put( "myForm", rows );
 
         // Execute system under test.
-        final ArrayList<DataForm> result = DAO.rowsToDataForms(input);
+        final ArrayList<ExtDataForm> result = DAO.rowsToDataForms(input);
 
         // Verify results.
         assertNotNull( result );
@@ -270,7 +270,7 @@ public class DAORowsToDataFormsTest
         input.put( "myForm", rows );
 
         // Execute system under test.
-        final ArrayList<DataForm> result = DAO.rowsToDataForms(input);
+        final ArrayList<ExtDataForm> result = DAO.rowsToDataForms(input);
 
         // Verify results.
         assertNotNull( result );
@@ -299,7 +299,7 @@ public class DAORowsToDataFormsTest
         input.put( "myOtherForm", rows2 );
 
         // Execute system under test.
-        final ArrayList<DataForm> result = DAO.rowsToDataForms(input);
+        final ArrayList<ExtDataForm> result = DAO.rowsToDataForms(input);
 
         // Verify results.
         assertNotNull( result );
@@ -336,7 +336,7 @@ public class DAORowsToDataFormsTest
         input.put( "myForm", rows );
 
         // Execute system under test.
-        final ArrayList<DataForm> result = DAO.rowsToDataForms(input);
+        final ArrayList<ExtDataForm> result = DAO.rowsToDataForms(input);
 
         // Verify results.
         assertNotNull( result );

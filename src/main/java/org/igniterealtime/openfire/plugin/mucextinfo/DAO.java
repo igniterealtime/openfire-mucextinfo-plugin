@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  */
 public class DAO
 {
-    private final static Cache<JID, CacheableOptional<ArrayList<DataForm>>> EXTENSIONS_BY_ROOM = CacheFactory.createLocalCache("MUC Extended Service Discovery");
+    private final static Cache<JID, CacheableOptional<ArrayList<ExtDataForm>>> EXTENSIONS_BY_ROOM = CacheFactory.createLocalCache("MUC Extended Service Discovery");
 
     private static final String SQL_REMOVE_FORM = "DELETE FROM mucextinfo WHERE room = ? AND formtypename = ?";
     private static final String SQL_ADD_FIELD = "INSERT INTO mucextinfo (room, formtypename, varname, label, varvalue) VALUES (?, ?, ?, ?, ?)";
@@ -244,7 +244,7 @@ public class DAO
      * @return The data forms containing the extended service discovery information for the room.
      */
     @Nullable
-    public static List<DataForm> retrieveExtensionElementsForRoom( @Nonnull JID room )
+    public static List<ExtDataForm> retrieveExtensionElementsForRoom( @Nonnull JID room )
     {
         room = room.asBareJID(); // normalize.
         Log.debug("Get all data forms for room: '{}'", room);
@@ -255,7 +255,7 @@ public class DAO
             lock.lock();
 
             // Try to get a result from the cache.
-            final CacheableOptional<ArrayList<DataForm>> optionalResult = EXTENSIONS_BY_ROOM.get(room);
+            final CacheableOptional<ArrayList<ExtDataForm>> optionalResult = EXTENSIONS_BY_ROOM.get(room);
             if ( optionalResult != null )
             {
                 Log.trace("Returning value from cache.");
@@ -303,7 +303,7 @@ public class DAO
             }
 
             // Transform the raw database results into DataForm instances.
-            final ArrayList<DataForm> formsForRoom = rowsToDataForms(rows);
+            final ArrayList<ExtDataForm> formsForRoom = rowsToDataForms(rows);
 
             // Record the end result in the cache.
             EXTENSIONS_BY_ROOM.put(room, CacheableOptional.of(formsForRoom));
@@ -326,7 +326,7 @@ public class DAO
      * @return The DataForm instances parsed from the database.
      */
     @Nullable
-    static ArrayList<DataForm> rowsToDataForms( @Nullable final ConcurrentMap<String, ArrayList<Field>> rows )
+    static ArrayList<ExtDataForm> rowsToDataForms( @Nullable final ConcurrentMap<String, ArrayList<Field>> rows )
     {
         if ( rows == null || rows.isEmpty() )
         {
@@ -334,14 +334,14 @@ public class DAO
         }
 
         // Marshall 'rows' into DataForm instances.
-        final ConcurrentMap<String, DataForm> result = new ConcurrentHashMap<>();
+        final ConcurrentMap<String, ExtDataForm> result = new ConcurrentHashMap<>();
         for ( final Map.Entry<String, ArrayList<Field>> entry : rows.entrySet() )
         {
             final String formTypeName = entry.getKey();
             final ArrayList<Field> fields = entry.getValue();
 
             // Get the data form for this row, create a new one if none exists yet.
-            final DataForm dataForm = result.computeIfAbsent(formTypeName, DataForm::new);
+            final ExtDataForm dataForm = result.computeIfAbsent(formTypeName, ExtDataForm::new);
 
             // Group fields by varName. Multi-valued fields will result in a mapped value of more than one element.
             final Map<String, List<Field>> groupedByVarName = fields.stream().collect(Collectors.groupingBy(Field::getVarName));

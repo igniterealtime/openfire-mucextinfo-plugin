@@ -15,7 +15,7 @@
 - limitations under the License.
 -->
 <%@ page import="org.igniterealtime.openfire.plugin.mucextinfo.DAO" %>
-<%@ page import="org.igniterealtime.openfire.plugin.mucextinfo.DataForm" %>
+<%@ page import="org.igniterealtime.openfire.plugin.mucextinfo.ExtDataForm" %>
 <%@ page import="org.jivesoftware.openfire.muc.MUCRoom" %>
 <%@ page import="org.jivesoftware.util.CookieUtils" %>
 <%@ page import="org.jivesoftware.util.ParamUtils" %>
@@ -74,14 +74,14 @@
         }
 
         if ( addForm ) {
-            List<DataForm> existing = DAO.retrieveExtensionElementsForRoom(roomJID);
+            List<ExtDataForm> existing = DAO.retrieveExtensionElementsForRoom(roomJID);
             if ( existing != null && existing.stream().anyMatch(dataForm -> dataForm.getFormTypeName().equalsIgnoreCase(formTypeName)) ) {
                 errors.put( "already exists", "A form with this name already exists!");
             }
         }
 
         if ( deleteForm ) {
-            List<DataForm> existing = DAO.retrieveExtensionElementsForRoom(roomJID);
+            List<ExtDataForm> existing = DAO.retrieveExtensionElementsForRoom(roomJID);
             if ( existing == null || existing.stream().noneMatch(dataForm -> dataForm.getFormTypeName().equalsIgnoreCase(formTypeName)) ) {
                 errors.put( "does not exist", "A form with this name does not exist!");
             }
@@ -97,7 +97,7 @@
             if ( varName == null || varName.trim().isEmpty() ) {
                 errors.put("varName", "Missing variable name.");
             } else {
-                List<DataForm> existing = DAO.retrieveExtensionElementsForRoom(roomJID);
+                List<ExtDataForm> existing = DAO.retrieveExtensionElementsForRoom(roomJID);
                 if ( existing == null || existing.stream().noneMatch(dataForm -> dataForm.getFields().stream().anyMatch(field -> field.getVarName().equals(varName)) ) )
                 {
                     errors.put("does not exist", "A field with this name does not exist in the form!");
