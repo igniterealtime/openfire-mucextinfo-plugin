@@ -68,6 +68,8 @@ public class MucExtInfoPlugin implements Plugin
         {
             Log.error("An exception occurred while trying to restore MUC Service Disco Info Providers.", e);
         }
+
+        DAO.purgeCache();
     }
 
     public static DiscoInfoProvider getProvider( final MultiUserChatService service ) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException

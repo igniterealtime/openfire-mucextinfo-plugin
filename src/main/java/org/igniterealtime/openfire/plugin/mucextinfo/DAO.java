@@ -400,4 +400,12 @@ public class DAO
             lock.unlock();
         }
     }
+
+    /**
+     * Remove all entries from the cache.
+     */
+    static void purgeCache()
+    {
+        EXTENSIONS_BY_ROOM.clear();
+    }
 }
