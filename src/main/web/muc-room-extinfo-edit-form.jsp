@@ -22,9 +22,13 @@
 <%@ page import="org.jivesoftware.util.StringUtils" %>
 <%@ page import="org.xmpp.packet.JID" %>
 <%@ page import="java.net.URLEncoder" %>
-<%@ page import="java.util.HashMap" %>
-<%@ page import="java.util.List" %>
-<%@ page import="java.util.Map" %>
+<%@ page import="org.igniterealtime.openfire.plugin.mucextinfo.MucExtInfoPlugin" %>
+<%@ page import="org.xmpp.forms.DataForm" %>
+<%@ page import="java.util.*" %>
+<%@ page import="org.xmpp.forms.FormField" %>
+<%@ page import="org.igniterealtime.openfire.plugin.mucextinfo.Field" %>
+<%@ page import="java.util.stream.Collectors" %>
+<%@ page import="java.util.function.Function" %>
 <%@ page errorPage="error.jsp" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
@@ -58,6 +62,7 @@
     String csrfParam = ParamUtils.getParameter(request, "csrf");
 
     // Validation.
+    final List<ExtDataForm> extensionsOnly = DAO.retrieveExtensionElementsForRoom(roomJID);
     if (addForm || deleteForm || addField || deleteField)
     {
         if ( csrfCookie == null || csrfParam == null || !csrfCookie.getValue().equals( csrfParam ) )
@@ -74,14 +79,14 @@
         }
 
         if ( addForm ) {
-            List<ExtDataForm> existing = DAO.retrieveExtensionElementsForRoom(roomJID);
+            List<ExtDataForm> existing = extensionsOnly;
             if ( existing != null && existing.stream().anyMatch(dataForm -> dataForm.getFormTypeName().equalsIgnoreCase(formTypeName)) ) {
                 errors.put( "already exists", "A form with this name already exists!");
             }
         }
 
         if ( deleteForm ) {
-            List<ExtDataForm> existing = DAO.retrieveExtensionElementsForRoom(roomJID);
+            List<ExtDataForm> existing = extensionsOnly;
             if ( existing == null || existing.stream().noneMatch(dataForm -> dataForm.getFormTypeName().equalsIgnoreCase(formTypeName)) ) {
                 errors.put( "does not exist", "A form with this name does not exist!");
             }
@@ -97,7 +102,7 @@
             if ( varName == null || varName.trim().isEmpty() ) {
                 errors.put("varName", "Missing variable name.");
             } else {
-                List<ExtDataForm> existing = DAO.retrieveExtensionElementsForRoom(roomJID);
+                List<ExtDataForm> existing = extensionsOnly;
                 if ( existing == null || existing.stream().noneMatch(dataForm -> dataForm.getFields().stream().anyMatch(field -> field.getVarName().equals(varName)) ) )
                 {
                     errors.put("does not exist", "A field with this name does not exist in the form!");
@@ -146,13 +151,41 @@
             pageContext.setAttribute("formTypeName", formTypeName);
         }
     }
+
     csrfParam = StringUtils.randomString(15);
     CookieUtils.setCookie(request, response, "csrf", csrfParam, -1);
     pageContext.setAttribute( "csrf", csrfParam) ;
     pageContext.setAttribute( "errors", errors );
     pageContext.setAttribute( "roomJID", roomJID );
     pageContext.setAttribute( "success", success != null && errors.isEmpty() );
-    pageContext.setAttribute( "extensions", DAO.retrieveExtensionElementsForRoom( roomJID ));
+
+    // All of the dataforms (including the extensions provided by this implementation).
+    final Set<DataForm> originalForms = MucExtInfoPlugin.getProvider(webManager.getMultiUserChatManager().getMultiUserChatService(roomJID)).getExtendedInfos(roomJID.getNode(), null, roomJID);
+    final List<ExtDataForm> extDataForms = new ArrayList<>();
+    for ( final DataForm originalForm : originalForms ) {
+        final ExtDataForm extDataForm = new ExtDataForm( originalForm.getField("FORM_TYPE").getFirstValue() );
+        for ( final FormField formField : originalForm.getFields() ) {
+            // Exclude the 'form type' field.
+            if ( !formField.getVariable().equals("FORM_TYPE") )
+            {
+                extDataForm.getFields().add(new Field(formField.getVariable(), formField.getLabel(), formField.getValues().toArray(new String[0])));
+            }
+        }
+        extDataForms.add(extDataForm);
+    }
+
+    // This collection is used for presentation purposes. Apply a consistent ordering, otherwise page reloads yield confusing results.
+    extDataForms.sort(Comparator.comparing(ExtDataForm::getFormTypeName));
+    pageContext.setAttribute( "extendedForms", extDataForms );
+
+    // A collection of just the extensions managed by this plugin, mapped by their form type name.
+    final Map<String, ExtDataForm> extensionsMappedByName;
+    if ( extensionsOnly == null ) {
+        extensionsMappedByName = Collections.emptyMap();
+    } else {
+        extensionsMappedByName = extensionsOnly.stream().collect(Collectors.toMap(ExtDataForm::getFormTypeName, Function.identity()));
+    }
+    pageContext.setAttribute( "extensionsOnly", extensionsMappedByName );
 %>
 <html>
 <head>
@@ -188,17 +221,19 @@
 
 <br>
 
-<c:forEach var="extension" items="${extensions}">
+<c:forEach var="extendedForm" items="${extendedForms}">
+
+    <c:set var="formContainsUnmodifiableFields" value="false"/>
 
     <form action="muc-room-extinfo-edit-form.jsp?edit" method="post">
         <input type="hidden" name="csrf" value="${csrf}">
         <input type="hidden" name="roomJID" value="${fn:escapeXml(roomJID.toBareJID())}">
-        <input type="hidden" name="formTypeName" value="${fn:escapeXml(extension.formTypeName)}">
+        <input type="hidden" name="formTypeName" value="${fn:escapeXml(extendedForm.formTypeName)}">
 
         <fieldset>
             <legend>
                 <fmt:message key="mucextinfo.page.form.legend">
-                    <fmt:param value="${extension.formTypeName}"/>
+                    <fmt:param value="${extendedForm.formTypeName}"/>
                 </fmt:message>
             </legend>
 
@@ -219,7 +254,7 @@
 
                         <tbody>
                         <c:choose>
-                            <c:when test="${empty extension.fields}">
+                            <c:when test="${empty extendedForm.fields}">
                         <tr>
                             <td align="center" colspan="6">
                                 <fmt:message key="mucextinfo.page.form.fields.no-fields" />
@@ -227,7 +262,7 @@
                         </tr>
                             </c:when>
                             <c:otherwise>
-                                <c:forEach var="field" items="${extension.fields}" varStatus="status">
+                                <c:forEach var="field" items="${extendedForm.fields}" varStatus="status">
                                     <tr class="jive-${status.index%2 == 0 ? 'even' : 'odd'}">
                                         <td width="1%">&nbsp;</td>
                                         <td><c:out value="${field.varName}"/></td>
@@ -238,11 +273,19 @@
                                             </c:forEach>
                                         </td>
                                         <td width="1%">
-                                            <a href="muc-room-extinfo-edit-form.jsp?deleteField=true&csrf=${csrf}&roomJID=${admin:urlEncode(roomJID)}&formTypeName=${admin:urlEncode(extension.formTypeName)}&varName=${admin:urlEncode(field.varName)}"
-                                               title="<fmt:message key="mucextinfo.page.click-to-delete" />"
-                                               onclick="return confirm('<fmt:message key="mucextinfo.page.field-delete-confirm"/>');">
-                                                <img src="../../images/delete-16x16.gif" width="16" height="16" border="0" alt="<fmt:message key="mucextinfo.page.click-to-delete" />">
-                                            </a>
+                                            <c:choose>
+                                                <c:when test="${not empty extensionsOnly[extendedForm.formTypeName] and extensionsOnly[extendedForm.formTypeName].fields.contains(field) }">
+                                                    <a href="muc-room-extinfo-edit-form.jsp?deleteField=true&csrf=${csrf}&roomJID=${admin:urlEncode(roomJID)}&formTypeName=${admin:urlEncode(extendedForm.formTypeName)}&varName=${admin:urlEncode(field.varName)}"
+                                                       title="<fmt:message key="mucextinfo.page.click-to-delete" />"
+                                                       onclick="return confirm('<fmt:message key="mucextinfo.page.field-delete-confirm"/>');">
+                                                        <img src="../../images/delete-16x16.gif" width="16" height="16" border="0" alt="<fmt:message key="mucextinfo.page.click-to-delete" />">
+                                                    </a>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <c:set var="formContainsUnmodifiableFields" value="true"/>
+                                                    &nbsp;
+                                                </c:otherwise>
+                                            </c:choose>
                                         </td>
                                     </tr>
                                 </c:forEach>
@@ -286,7 +329,14 @@
                 <table border="0" width="100%">
                     <tr>
                         <td><input type="submit" name="addField" value="<fmt:message key="mucextinfo.page.add-field" />" /></td>
-                        <td align="right"><input type="submit" name="deleteForm" value="<fmt:message key="mucextinfo.page.delete-form" />" onclick="return confirm('<fmt:message key="mucextinfo.page.form-delete-confirm"/>');" /></td>
+                        <c:choose>
+                            <c:when test="${formContainsUnmodifiableFields}">
+                                <td align="right"><input type="submit" name="deleteForm" value="<fmt:message key="mucextinfo.page.delete-all-extension-fields" />" onclick="return confirm('<fmt:message key="mucextinfo.page.extension-fields-delete-confirm"/>');" /></td>
+                            </c:when>
+                            <c:otherwise>
+                                <td align="right"><input type="submit" name="deleteForm" value="<fmt:message key="mucextinfo.page.delete-form" />" onclick="return confirm('<fmt:message key="mucextinfo.page.form-delete-confirm"/>');" /></td>
+                            </c:otherwise>
+                        </c:choose>
                     </tr>
                 </table>
 

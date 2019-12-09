@@ -16,6 +16,8 @@
 package org.igniterealtime.openfire.plugin.mucextinfo;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Representation of a field, as used in data forms.
@@ -50,5 +52,24 @@ public class Field implements Serializable
     public String[] getValues()
     {
         return values;
+    }
+
+    @Override
+    public boolean equals( final Object o )
+    {
+        if ( this == o ) { return true; }
+        if ( o == null || getClass() != o.getClass() ) { return false; }
+        final Field field = (Field) o;
+        return Objects.equals(varName, field.varName) &&
+            Objects.equals(label, field.label) &&
+            Arrays.equals(values, field.values);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = Objects.hash(varName, label);
+        result = 31 * result + Arrays.hashCode(values);
+        return result;
     }
 }

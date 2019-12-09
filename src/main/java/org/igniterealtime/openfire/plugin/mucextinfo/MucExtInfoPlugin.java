@@ -70,31 +70,49 @@ public class MucExtInfoPlugin implements Plugin
         }
     }
 
+    public static DiscoInfoProvider getProvider( final MultiUserChatService service ) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException
+    {
+        final IQDiscoInfoHandler iqDiscoInfoHandler = XMPPServer.getInstance().getIQDiscoInfoHandler();
+
+        final Method getMethod = iqDiscoInfoHandler.getClass().getDeclaredMethod("getProvider", String.class);
+        try
+        {
+            getMethod.setAccessible(true);
+            return (DiscoInfoProvider) getMethod.invoke(iqDiscoInfoHandler, service.getServiceDomain());
+        }
+        finally
+        {
+            getMethod.setAccessible(false);
+        }
+    }
+
+    public static void setProvider( final MultiUserChatService service, DiscoInfoProvider provider ) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException
+    {
+        final IQDiscoInfoHandler iqDiscoInfoHandler = XMPPServer.getInstance().getIQDiscoInfoHandler();
+
+        final Method setMethod = iqDiscoInfoHandler.getClass().getDeclaredMethod("setProvider", String.class, DiscoInfoProvider.class);
+        try
+        {
+            setMethod.setAccessible(true);
+            setMethod.invoke(iqDiscoInfoHandler, service.getServiceDomain(), provider );
+        }
+        finally
+        {
+            setMethod.setAccessible(false);
+        }
+    }
+
     protected synchronized void replaceMUCServiceProviders() throws InvocationTargetException, IllegalAccessException, NoSuchMethodException
     {
         Log.info("Replacing original IQ Disco Info handlers for all MUC services with proxies.");
         final List<MultiUserChatService> services = XMPPServer.getInstance().getMultiUserChatManager().getMultiUserChatServices();
         for ( final MultiUserChatService service : services )
         {
-            final IQDiscoInfoHandler iqDiscoInfoHandler = XMPPServer.getInstance().getIQDiscoInfoHandler();
-
-            final Method getMethod = iqDiscoInfoHandler.getClass().getDeclaredMethod("getProvider", String.class);
-            final Method setMethod = iqDiscoInfoHandler.getClass().getDeclaredMethod("setProvider", String.class, DiscoInfoProvider.class);
-            try
+            final DiscoInfoProvider old = getProvider( service );
+            if ( old != null )
             {
-                getMethod.setAccessible(true);
-                final DiscoInfoProvider old = (DiscoInfoProvider) getMethod.invoke(iqDiscoInfoHandler, service.getServiceDomain());
-                if ( old != null )
-                {
-                    Log.trace("... replacing handler for MUC service '{}'.", service.getServiceDomain());
-                    setMethod.setAccessible(true);
-                    setMethod.invoke(iqDiscoInfoHandler, service.getServiceDomain(), new DiscoInfoProviderProxy(old, service.getServiceDomain()));
-                }
-            }
-            finally
-            {
-                setMethod.setAccessible(false);
-                getMethod.setAccessible(false);
+                Log.trace("... replacing handler for MUC service '{}'.", service.getServiceDomain());
+                setProvider( service, new DiscoInfoProviderProxy( old, service.getServiceDomain() ) );
             }
         }
         Log.debug("Finished replacing all relevant handlers.");
@@ -106,25 +124,11 @@ public class MucExtInfoPlugin implements Plugin
         final List<MultiUserChatService> services = XMPPServer.getInstance().getMultiUserChatManager().getMultiUserChatServices();
         for ( final MultiUserChatService service : services )
         {
-            final IQDiscoInfoHandler iqDiscoInfoHandler = XMPPServer.getInstance().getIQDiscoInfoHandler();
-
-            final Method getMethod = iqDiscoInfoHandler.getClass().getDeclaredMethod("getProvider", String.class);
-            final Method setMethod = iqDiscoInfoHandler.getClass().getDeclaredMethod("setProvider", String.class, DiscoInfoProvider.class);
-            try
+            final DiscoInfoProvider old = getProvider( service );
+            if ( old instanceof DiscoInfoProviderProxy )
             {
-                getMethod.setAccessible(true);
-                final DiscoInfoProvider old = (DiscoInfoProvider) getMethod.invoke(iqDiscoInfoHandler, service.getServiceDomain());
-                if ( old instanceof DiscoInfoProviderProxy )
-                {
-                    Log.trace("... restoring handler for MUC service '{}'.", service.getServiceDomain());
-                    setMethod.setAccessible(true);
-                    setMethod.invoke(iqDiscoInfoHandler, service.getServiceDomain(), ((DiscoInfoProviderProxy) old).getDelegate());
-                }
-            }
-            finally
-            {
-                setMethod.setAccessible(false);
-                getMethod.setAccessible(false);
+                Log.trace("... restoring handler for MUC service '{}'.", service.getServiceDomain());
+                setProvider( service, ((DiscoInfoProviderProxy) old).getDelegate() );
             }
         }
 

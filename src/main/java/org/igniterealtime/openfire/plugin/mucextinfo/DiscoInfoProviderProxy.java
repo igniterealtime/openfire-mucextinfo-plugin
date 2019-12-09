@@ -20,14 +20,13 @@ import org.jivesoftware.openfire.disco.DiscoInfoProvider;
 import org.jivesoftware.openfire.disco.IQDiscoInfoHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xmpp.forms.DataForm;
 import org.xmpp.forms.FormField;
 import org.xmpp.packet.JID;
 
 import javax.annotation.Nonnull;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import javax.annotation.Nullable;
+import java.util.*;
 
 /**
  * A DiscoInfoProvider that delegates to another, enriching the data that it receives from the delegate.
@@ -81,10 +80,6 @@ public class DiscoInfoProviderProxy implements DiscoInfoProvider
         Log.debug("Getting Extended Info for name '{}', node '{}', senderJID '{}'.", name, node, senderJID);
 
         Set<org.xmpp.forms.DataForm> result = delegate.getExtendedInfos(name, node, senderJID);
-        if ( result == null )
-        {
-            result = new HashSet<>();
-        }
         Log.trace("... obtained {} data form(s) from the delegate.", result.size());
 
         final List<ExtDataForm> dataForms = DAO.retrieveExtensionElementsForRoom(new JID(name, serviceDomain, null) );
@@ -94,19 +89,7 @@ public class DiscoInfoProviderProxy implements DiscoInfoProvider
         {
             for ( final ExtDataForm extensionElement : dataForms )
             {
-                // TODO DataForms obtained from this plugin potentially have the same Form Type Name as one that's obtained from the delegate. How these results are merged is something that should be looked into more carefully.
-                final org.xmpp.forms.DataForm dataForm = new org.xmpp.forms.DataForm(org.xmpp.forms.DataForm.Type.result);
-                dataForm.addField("FORM_TYPE", null, FormField.Type.hidden).addValue(extensionElement.getFormTypeName());
-
-                for ( final Field field : extensionElement.getFields() )
-                {
-                    final FormField formField = dataForm.addField(field.getVarName(), field.getLabel(), null);
-                    for ( final String value : field.getValues() )
-                    {
-                        formField.addValue(value);
-                    }
-                }
-                result.add(dataForm);
+                result = merge( result, extensionElement );
             }
         }
         return result;
@@ -116,5 +99,49 @@ public class DiscoInfoProviderProxy implements DiscoInfoProvider
     public boolean hasInfo( final String name, final String node, final JID senderJID )
     {
         return delegate.hasInfo(name, node, senderJID);
+    }
+
+    @Nonnull
+    static Set<org.xmpp.forms.DataForm> merge( @Nullable Set<org.xmpp.forms.DataForm> dataForms, @Nullable ExtDataForm extensionElement) {
+        Set<org.xmpp.forms.DataForm> result;
+        if ( dataForms == null ) {
+            result = new HashSet<>();
+        } else {
+            result = new HashSet<>(dataForms);
+        }
+
+        if ( extensionElement == null ) {
+            return result;
+        }
+
+        // Construct a new data form (that might go unused, see below).
+        final DataForm newDataForm = new org.xmpp.forms.DataForm(org.xmpp.forms.DataForm.Type.result);
+        newDataForm.addField("FORM_TYPE", null, FormField.Type.hidden).addValue(extensionElement.getFormTypeName());
+
+        // Find from the results a data form for the variable, otherwise use the newly created one.
+        final DataForm dataForm = result.stream().filter(df -> df.getFields().stream()
+            .anyMatch(
+                formField -> "FORM_TYPE".equals(formField.getVariable()) &&
+                    extensionElement.getFormTypeName().equals(formField.getFirstValue())))
+            .findAny()
+            .orElse( newDataForm );
+
+        // Now, add or merge fields from the extension data into the result.
+        for ( final Field extensionFields : extensionElement.getFields() )
+        {
+            FormField formField = dataForm.getField(extensionFields.getVarName());
+            if ( formField == null ) {
+                formField = dataForm.addField( extensionFields.getVarName(), extensionFields.getLabel(), null);
+            }
+
+            for ( final String value : extensionFields.getValues() )
+            {
+                formField.addValue(value);
+            }
+        }
+
+        result.add(dataForm);
+
+        return result;
     }
 }
