@@ -14,3 +14,12 @@ Then, for running Openfire installations:
 
 For local Openfire builds:
 * `cp target/mucextinfo-openfire-plugin-assembly.jar /path/to/git/Openfire/distribution/target/distribution-base/plugins/mucextinfo.jar`
+
+## CI Build Status
+
+[![Build Status](https://github.com/igniterealtime/openfire-mucextinfo-plugin/workflows/Java%20CI/badge.svg)](https://github.com/igniterealtime/openfire-mucextinfo-plugin/actions)
+
+## Reporting Issues
+
+Issues may be reported to the [forums](https://discourse.igniterealtime.org) or via this repo's [Github Issues](https://github.com/igniterealtime/openfire-mucextinfo-plugin).
+
