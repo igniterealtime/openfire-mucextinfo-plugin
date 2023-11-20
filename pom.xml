@@ -12,7 +12,7 @@
 
     <groupId>org.igniterealtime.openfire.plugins</groupId>
     <artifactId>mucextinfo</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2-SNAPSHOT</version>
 
     <name>MUC Service Discovery Extensions</name>
     <description>Allows an admin to configure Extended Service Discovery information to Multi User Chat entities.</description>
