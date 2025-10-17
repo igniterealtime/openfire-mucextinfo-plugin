@@ -127,21 +127,29 @@ public class DiscoInfoProviderProxy implements DiscoInfoProvider
             .orElse( newDataForm );
 
         // Now, add or merge fields from the extension data into the result.
-        for ( final Field extensionFields : extensionElement.getFields() )
+        for ( final Field extensionField : extensionElement.getFields() )
         {
-            FormField formField = dataForm.getField(extensionFields.getVarName());
+            FormField formField = dataForm.getField(extensionField.getVarName());
             if ( formField == null ) {
-                formField = dataForm.addField( extensionFields.getVarName(), extensionFields.getLabel(), null);
+                formField = dataForm.addField( extensionField.getVarName(), extensionField.getLabel(), null);
             }
 
-            for ( final String value : extensionFields.getValues() )
+            for ( final String value : extensionField.getValues() )
             {
                 formField.addValue(value);
+            }
+
+            // Default type is text-single, multiple values means it actually is a multi-field
+            if(isMultiField(formField)) {
+                formField.setType(FormField.Type.text_multi);
             }
         }
 
         result.add(dataForm);
 
         return result;
+    }
+    private static boolean isMultiField(FormField field) {
+        return field.getValues() != null && field.getValues().size() > 1;
     }
 }
