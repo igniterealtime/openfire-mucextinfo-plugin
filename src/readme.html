@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+  - Copyright (C) 2019 Ignite Realtime Foundation. All rights reserved.
+  -
+  - Licensed under the Apache License, Version 2.0 (the "License");
+  - you may not use this file except in compliance with the License.
+  - You may obtain a copy of the License at
+  -
+  - http://www.apache.org/licenses/LICENSE-2.0
+  -
+  - Unless required by applicable law or agreed to in writing, software
+  - distributed under the License is distributed on an "AS IS" BASIS,
+  - WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  - See the License for the specific language governing permissions and
+  - limitations under the License.
+  -->
+<html>
+<head>
+    <title>MUC Service Discovery Extensions Plugin Readme</title>
+    <style type="text/css">
+        BODY {
+            font-size : 100%;
+        }
+        BODY, TD, TH {
+            font-family : tahoma, verdana, arial, helvetica, sans-serif;
+            font-size : 0.8em;
+        }
+        H2 {
+             font-size : 10pt;
+             font-weight : bold;
+        }
+        A:hover {
+            text-decoration : none;
+        }
+        H1 {
+            font-family : tahoma, arial, helvetica, sans-serif;
+            font-size : 1.4em;
+            font-weight: bold;
+            border-bottom : 1px #ccc solid;
+            padding-bottom : 2px;
+        }
+
+        TT {
+            font-family : courier new;
+            font-weight : bold;
+            color : #060;
+        }
+        PRE {
+            font-family : courier new;
+            font-size : 100%;
+        }
+    </style>
+</head>
+<body>
+
+<h1>
+    MUC Service Discovery Extensions Plugin Readme
+</h1>
+
+<h2>Description</h2>
+
+<p>
+    This plugin adds functionality to Openfire that allows an administrator to
+    add custom extensions to the response to Service Discovery requests made at
+    Multi-User Chat rooms.
+</p>
+
+<h2>Installation</h2>
+
+<p>
+    Copy mucextinfo.jar into the plugins directory of your Openfire installation.
+    The plugin will then be automatically deployed. To upgrade to a new version,
+    copy the new mucextinfo.jar file over the existing file.
+</p>
+
+<h2>Configuration</h2>
+
+<p>
+    When the plugin is installed, a new page will appear on the admin console.
+    It can be found on the "Group Chat" tab, in the "Room Administration" menu.
+    After selecting a room, The "Room Options" menu item will expand with
+    various configuration pages for the room. This plugin adds a page to that
+    section, named "Service Discovery Ext." Use this page to manage to add
+    custom information to the response on Service Discover requests for MUC
+    rooms.
+</p>
+
+</body>
+</html>
