@@ -19,11 +19,9 @@ import org.junit.Test;
 import org.xmpp.forms.DataForm;
 import org.xmpp.forms.FormField;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
 
 import static org.junit.Assert.*;
 
@@ -224,6 +222,7 @@ public class DiscoInfoProviderProxyMergeTest
         assertEquals( 2, resultFields.size() ); // should contain the field we added, as well as a 'FORM_TYPE' field.
         assertTrue( resultFields.stream().anyMatch( formField -> "origvar".equals( formField.getVariable() )
             && "origlabel".equals( formField.getLabel() )
+            && formField.getType().equals(FormField.Type.text_multi)
             && formField.getValues().contains( "origvalue")
             && formField.getValues().contains( "extvalue")
             && formField.getValues().size() == 2
