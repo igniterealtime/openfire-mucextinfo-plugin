@@ -95,6 +95,10 @@
         if ( addField ) {
             if ( varName == null || varName.trim().isEmpty() ) {
                 errors.put("varName", "Missing variable name.");
+            } else {
+               List<ExtDataForm> existing = extensionsOnly;
+               if ( existing != null && existing.stream().anyMatch(dataForm -> dataForm.getFields().stream().anyMatch(field -> field.getVarName().equals(varName))) )
+                errors.put("varName", "Variable already exists.");
             }
         }
 
